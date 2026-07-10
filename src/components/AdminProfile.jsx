@@ -97,7 +97,7 @@ export default function AdminProfile() {
 
       {/* Dropdown Panel */}
       {open && (
-        <div className="absolute right-0 top-14 w-[360px] bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-stone-200 z-50 overflow-hidden">
+        <div className="absolute right-0 top-14 w-[95vw] max-w-[360px] bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-stone-200 z-50 overflow-hidden">
           {/* Panel Header */}
           <div className="bg-gradient-to-r from-[#0A1A12] to-[#1a3a22] px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2">

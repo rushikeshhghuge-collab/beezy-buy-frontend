@@ -45,22 +45,22 @@ const DashboardStats = memo(function DashboardStats({ products }) {
   return (
     <div className="space-y-8">
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
         {statCards.map(({ label, value, icon: Icon, bg, text, border }) => (
-          <div key={label} className={`${bg} border ${border} rounded-2xl p-5 flex flex-col gap-3`}>
+          <div key={label} className={`${bg} border ${border} rounded-2xl p-4 sm:p-5 flex flex-col gap-3`}>
             <div className="flex items-center justify-between">
               <p className="text-[11px] font-black text-stone-500 uppercase tracking-widest">{label}</p>
               <div className={`w-9 h-9 rounded-xl ${bg} border ${border} flex items-center justify-center`}>
                 <Icon className={`text-lg ${text}`} />
               </div>
             </div>
-            <p className={`text-3xl font-black ${text}`}>{value}</p>
+            <p className={`text-2xl sm:text-3xl font-black ${text}`}>{value}</p>
           </div>
         ))}
       </div>
 
       {/* Inventory Value Banner */}
-      <div className="bg-gradient-to-r from-[#0A1A12] to-[#1a3a22] rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-[#0A1A12] to-[#1a3a22] rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center">
             <MdAttachMoney className="text-amber-400 text-2xl" />
@@ -152,6 +152,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [editingProduct, setEditingProduct] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [products, setProducts] = useState(() => {
     const cached = localStorage.getItem("beezy_products_v5");
@@ -218,22 +219,38 @@ export default function Dashboard() {
   return (
     <div className="w-full flex min-h-screen bg-[#FAF9F5]">
       <Toaster position="top-right" reverseOrder={false} toastOptions={{ duration: 2000 }} />
-      <Sidebar currentTab={currentTab} setCurrentTab={setCurrentTab} />
+      <Sidebar
+        currentTab={currentTab}
+        setCurrentTab={setCurrentTab}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="bg-white border-b border-stone-200/80 px-8 py-4 flex items-center justify-between flex-shrink-0">
-          <div>
-            <h2 className="text-base font-black text-stone-800 uppercase tracking-wider">
-              {tabTitles[currentTab] || "Dashboard"}
-            </h2>
-            <p className="text-[10px] text-stone-400 font-bold tracking-widest uppercase mt-0.5">
-              {new Date().toLocaleDateString("en-US", { weekday: "short", year: "numeric", month: "short", day: "numeric" })}
-            </p>
+        <header className="bg-white border-b border-stone-200/80 px-4 sm:px-8 py-4 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-3">
+            {/* Hamburger — mobile only */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden flex flex-col gap-1.5 p-1.5 rounded-lg hover:bg-stone-100 transition-colors"
+            >
+              <span className="w-5 h-0.5 bg-stone-700 rounded" />
+              <span className="w-5 h-0.5 bg-stone-700 rounded" />
+              <span className="w-5 h-0.5 bg-stone-700 rounded" />
+            </button>
+            <div>
+              <h2 className="text-sm sm:text-base font-black text-stone-800 uppercase tracking-wider">
+                {tabTitles[currentTab] || "Dashboard"}
+              </h2>
+              <p className="text-[10px] text-stone-400 font-bold tracking-widest uppercase mt-0.5 hidden sm:block">
+                {new Date().toLocaleDateString("en-US", { weekday: "short", year: "numeric", month: "short", day: "numeric" })}
+              </p>
+            </div>
           </div>
           <AdminProfile />
         </header>
 
-        <main className="flex-1 p-8 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
           {currentTab === "dashboard" && <DashboardStats products={products} />}
 
           {currentTab === "inventory" && (

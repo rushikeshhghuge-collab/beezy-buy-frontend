@@ -55,7 +55,7 @@ export default function ProductForm({ onSubmit, existingProduct, onCancel }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-stone-200/80 p-8 max-w-3xl mx-auto shadow-md">
+    <div className="bg-white rounded-2xl border border-stone-200/80 p-4 sm:p-8 max-w-3xl mx-auto shadow-md">
       <h3 className="text-base font-extrabold text-stone-900 uppercase tracking-wider mb-8 flex items-center gap-2.5">
         {existingProduct ? (
           <><MdEdit className="w-5 h-5 text-amber-500" /> Modify Selected Catalog Profile</>
@@ -65,7 +65,7 @@ export default function ProductForm({ onSubmit, existingProduct, onCancel }) {
       </h3>
 
       <form onSubmit={handleSubmit} className="space-y-6 text-sm font-semibold text-stone-700">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
             <label className="block uppercase text-[11px] font-bold text-stone-400 tracking-wider mb-2">Product Name/Title</label>
             <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-stone-50 border-2 border-stone-200 rounded-xl px-4 py-3 outline-none font-medium text-stone-800 focus:border-amber-500 focus:bg-white transition-all" placeholder="e.g. Lavender Hydrating Mist" required />
@@ -76,7 +76,7 @@ export default function ProductForm({ onSubmit, existingProduct, onCancel }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           <div>
             <label className="block uppercase text-[11px] font-bold text-stone-400 tracking-wider mb-2">Category</label>
             <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full bg-stone-50 border-2 border-stone-200 rounded-xl px-4 py-3 outline-none font-medium text-stone-800 focus:border-amber-500 focus:bg-white transition-all">
@@ -96,7 +96,7 @@ export default function ProductForm({ onSubmit, existingProduct, onCancel }) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-center">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 items-center">
           <div>
             <label className="block uppercase text-[11px] font-bold text-stone-400 tracking-wider mb-2">Base Price (₹)</label>
             <input type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full bg-stone-50 border-2 border-stone-200 rounded-xl px-4 py-3 outline-none font-medium text-stone-800 focus:border-amber-500 focus:bg-white transition-all font-mono" required />
