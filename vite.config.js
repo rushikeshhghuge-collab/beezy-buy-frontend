@@ -6,8 +6,18 @@ import tailwindcss from "@tailwindcss/vite"; // <-- Import the new plugin
 export default defineConfig({
   plugins: [
     react(),
-    tailwindcss(), // <-- Add it to your plugins array here
+    tailwindcss(),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes("react-icons")) return "icons";
+          if (id.includes("node_modules")) return "vendor";
+        },
+      },
+    },
+  },
   server: {
     proxy: {
       "/api": {

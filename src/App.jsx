@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -6,28 +6,35 @@ import {
   Navigate,
 } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-import DashboardLayout from "./layouts/DashboardLayout";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import ForgotPassword from "./pages/ForgotPassword";
-import Dashboard from "./pages/Dashboard";
-import ProductList from "./pages/ProductList";
-import ProductForm from "./pages/ProductForm";
 
-// Authentication Route Guard Helper
-const HiveRouteGuard = ({ children }) => {
+const Login = lazy(() => import("./pages/Login"));
+const Signup = lazy(() => import("./pages/Signup"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+
+const PrivateRoute = ({ children }) => {
   const isAuth = localStorage.getItem("beezy_authenticated") === "true";
-  return isAuth ? (
-    <DashboardLayout>{children}</DashboardLayout>
-  ) : (
-    <Navigate to="/" replace />
-  );
+  return isAuth ? children : <Navigate to="/" replace />;
 };
+
+const RedirectIfAuthenticated = ({ children }) => {
+  const isAuth = localStorage.getItem("beezy_authenticated") === "true";
+  return isAuth ? <Navigate to="/dashboard" replace /> : children;
+};
+
+// Clear any stale auth on first load
+if (typeof window !== "undefined") {
+  const appVersion = "v3";
+  if (localStorage.getItem("beezy_app_version") !== appVersion) {
+    localStorage.removeItem("beezy_authenticated");
+    localStorage.removeItem("beezy_token");
+    localStorage.setItem("beezy_app_version", appVersion);
+  }
+}
 
 export default function App() {
   return (
     <Router>
-      {/* Toast Notification Configured with Custom Bee Theme Elements */}
       <Toaster
         position="top-right"
         toastOptions={{
@@ -38,43 +45,15 @@ export default function App() {
           },
         }}
       />
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route
-          path="/dashboard"
-          element={
-            <HiveRouteGuard>
-              <Dashboard />
-            </HiveRouteGuard>
-          }
-        />
-        <Route
-          path="/products"
-          element={
-            <HiveRouteGuard>
-              <ProductList />
-            </HiveRouteGuard>
-          }
-        />
-        <Route
-          path="/add"
-          element={
-            <HiveRouteGuard>
-              <ProductForm />
-            </HiveRouteGuard>
-          }
-        />
-        <Route
-          path="/edit/:id"
-          element={
-            <HiveRouteGuard>
-              <ProductForm />
-            </HiveRouteGuard>
-          }
-        />
-      </Routes>
+      <Suspense fallback={<div style={{minHeight:"100vh",background:"#0B3B24"}} />}>
+        <Routes>
+          <Route path="/" element={<RedirectIfAuthenticated><Login /></RedirectIfAuthenticated>} />
+          <Route path="/signup" element={<RedirectIfAuthenticated><Signup /></RedirectIfAuthenticated>} />
+          <Route path="/forgot-password" element={<RedirectIfAuthenticated><ForgotPassword /></RedirectIfAuthenticated>} />
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </Router>
   );
 }
