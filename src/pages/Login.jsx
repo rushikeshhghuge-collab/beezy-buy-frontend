@@ -40,11 +40,6 @@ export default function Login() {
     e.preventDefault();
     if (!email || !password) { toast.error("Please enter both email and password.", { duration: 2000 }); return; }
     if (!EMAIL_REGEX.test(email)) { toast.error("Enter a valid email address.", { duration: 2000 }); return; }
-    if (!PASSWORD_RULES.test(password)) {
-      toast.error("Password must be 8+ chars with uppercase, lowercase, number, and special character.", { duration: 2000 });
-      return;
-    }
-    // Try backend JWT login first, fallback to localStorage for offline use
     try {
       const res = await fetch(api("/api/auth/login"), {
         method: "POST",
@@ -53,24 +48,16 @@ export default function Login() {
       });
       const data = await res.json();
       if (res.ok && data.token) {
-        localStorage.setItem("beezy_authenticated", "true");
-        localStorage.setItem("beezy_current_user", email);
         localStorage.setItem("beezy_token", data.token);
+        localStorage.setItem("beezy_current_user", email);
         toast.success("Welcome back!", { duration: 2000 });
         navigate("/dashboard");
-        return;
+      } else {
+        toast.error(data.message || "Invalid credentials.", { duration: 2000 });
       }
     } catch {
-      // backend offline — fall through to local check
+      toast.error("Server unavailable. Please try again later.", { duration: 2000 });
     }
-    if (verifyCredentials(email, password)) {
-      localStorage.setItem("beezy_authenticated", "true");
-      localStorage.setItem("beezy_current_user", email);
-      toast.success("Welcome back!", { duration: 2000 });
-      navigate("/dashboard");
-      return;
-    }
-    toast.error("Invalid email or password.", { duration: 2000 });
   };
 
   return (

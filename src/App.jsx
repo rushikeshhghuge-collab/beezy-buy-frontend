@@ -13,13 +13,13 @@ const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 
 const PrivateRoute = ({ children }) => {
-  const isAuth = localStorage.getItem("beezy_authenticated") === "true";
-  return isAuth ? children : <Navigate to="/" replace />;
+  const token = localStorage.getItem("beezy_token");
+  return token ? children : <Navigate to="/" replace />;
 };
 
 const RedirectIfAuthenticated = ({ children }) => {
-  const isAuth = localStorage.getItem("beezy_authenticated") === "true";
-  return isAuth ? <Navigate to="/dashboard" replace /> : children;
+  const token = localStorage.getItem("beezy_token");
+  return token ? <Navigate to="/dashboard" replace /> : children;
 };
 
 // Clear any stale auth on first load

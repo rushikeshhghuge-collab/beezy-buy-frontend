@@ -26,9 +26,12 @@ function DeleteModal({ product, onConfirm, onCancel }) {
 }
 
 export default function ProductList({
-  products, onEdit, onDelete, searchQuery, setSearchQuery, selectedCategory, setSelectedCategory,
+  products, loading, onEdit, onDelete, searchQuery, setSearchQuery, selectedCategory, setSelectedCategory,
 }) {
   const [confirmDelete, setConfirmDelete] = useState(null);
+
+  // Use _id (MongoDB) or id (local fallback)
+  const getId = (p) => p._id || p.id;
 
   const filtered = useMemo(() => products.filter((p) => {
     const matchesSearch =
@@ -38,12 +41,22 @@ export default function ProductList({
     return matchesSearch && matchesCategory;
   }), [products, searchQuery, selectedCategory]);
 
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="bg-white rounded-2xl border border-stone-200 h-16 animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {confirmDelete && (
         <DeleteModal
           product={confirmDelete}
-          onConfirm={() => { onDelete(confirmDelete.id); setConfirmDelete(null); }}
+          onConfirm={() => { onDelete(getId(confirmDelete)); setConfirmDelete(null); }}
           onCancel={() => setConfirmDelete(null)}
         />
       )}
@@ -66,9 +79,7 @@ export default function ProductList({
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all ${
-                selectedCategory === cat
-                  ? "bg-amber-500 text-white shadow-md"
-                  : "bg-stone-100 text-stone-500 hover:bg-stone-200"
+                selectedCategory === cat ? "bg-amber-500 text-white shadow-md" : "bg-stone-100 text-stone-500 hover:bg-stone-200"
               }`}
             >
               {cat}
@@ -104,27 +115,53 @@ export default function ProductList({
                 </thead>
                 <tbody className="divide-y divide-stone-100">
                   {filtered.map((product) => (
-                    <tr key={product.id} className="hover:bg-stone-50/60 transition-colors">
+                    <tr key={getId(product)} className="hover:bg-stone-50/60 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <img src={product.image} alt={product.name} loading="lazy" className="w-10 h-10 rounded-xl object-cover border border-stone-200 flex-shrink-0" onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=100&auto=format&fit=crop&q=80"; }} />
+                          <img
+                            src={product.image || product.productImage}
+                            alt={product.name}
+                            loading="lazy"
+                            className="w-10 h-10 rounded-xl object-cover border border-stone-200 flex-shrink-0"
+                            onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=100&auto=format&fit=crop&q=80"; }}
+                          />
                           <div>
                             <p className="font-bold text-stone-800 text-xs">{product.name}</p>
                             <p className="text-[11px] text-stone-400 font-medium">{product.brand}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-4"><span className="text-xs font-bold text-stone-500 bg-stone-100 px-2.5 py-1 rounded-full whitespace-nowrap">{product.category}</span></td>
+                      <td className="px-4 py-4">
+                        <span className="text-xs font-bold text-stone-500 bg-stone-100 px-2.5 py-1 rounded-full whitespace-nowrap">{product.category}</span>
+                      </td>
                       <td className="px-4 py-4">
                         <p className="font-bold text-stone-800 text-xs">₹{product.price}</p>
                         {product.discount > 0 && <p className="text-[11px] text-emerald-600 font-bold">{product.discount}% off</p>}
                       </td>
-                      <td className="px-4 py-4"><span className={`text-xs font-bold ${product.stock < 50 ? "text-red-500" : "text-stone-700"}`}>{product.stock.toLocaleString()}</span></td>
-                      <td className="px-4 py-4"><span className={`text-[11px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap ${product.status === "Active" ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-500"}`}>{product.status}</span></td>
+                      <td className="px-4 py-4">
+                        <span className={`text-xs font-bold ${product.stock < 50 ? "text-red-500" : "text-stone-700"}`}>
+                          {(product.stock ?? 0).toLocaleString()}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap ${product.status === "Active" ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-500"}`}>
+                          {product.status}
+                        </span>
+                      </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
-                          <button onClick={() => onEdit(product)} className="flex items-center gap-1 text-[11px] font-bold text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg transition-all whitespace-nowrap"><MdEdit className="text-sm" /> Edit</button>
-                          <button onClick={() => setConfirmDelete(product)} className="flex items-center gap-1 text-[11px] font-bold text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-all whitespace-nowrap"><MdDelete className="text-sm" /> Delete</button>
+                          <button
+                            onClick={() => onEdit(product)}
+                            className="flex items-center gap-1 text-[11px] font-bold text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-lg transition-all whitespace-nowrap"
+                          >
+                            <MdEdit className="text-sm" /> Edit
+                          </button>
+                          <button
+                            onClick={() => setConfirmDelete(product)}
+                            className="flex items-center gap-1 text-[11px] font-bold text-red-500 hover:text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-all whitespace-nowrap"
+                          >
+                            <MdDelete className="text-sm" /> Delete
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -137,15 +174,23 @@ export default function ProductList({
           {/* Mobile Cards */}
           <div className="sm:hidden space-y-3">
             {filtered.map((product) => (
-              <div key={product.id} className="bg-white rounded-2xl border border-stone-200 p-4 shadow-sm">
+              <div key={getId(product)} className="bg-white rounded-2xl border border-stone-200 p-4 shadow-sm">
                 <div className="flex items-center gap-3 mb-3">
-                  <img src={product.image} alt={product.name} loading="lazy" className="w-14 h-14 rounded-xl object-cover border border-stone-200 flex-shrink-0" onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=100&auto=format&fit=crop&q=80"; }} />
+                  <img
+                    src={product.image || product.productImage}
+                    alt={product.name}
+                    loading="lazy"
+                    className="w-14 h-14 rounded-xl object-cover border border-stone-200 flex-shrink-0"
+                    onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=100&auto=format&fit=crop&q=80"; }}
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-stone-800 text-sm truncate">{product.name}</p>
                     <p className="text-xs text-stone-400 font-medium">{product.brand}</p>
                     <span className="text-[11px] font-bold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-full">{product.category}</span>
                   </div>
-                  <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 ${product.status === "Active" ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-500"}`}>{product.status}</span>
+                  <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full flex-shrink-0 ${product.status === "Active" ? "bg-emerald-100 text-emerald-700" : "bg-stone-100 text-stone-500"}`}>
+                    {product.status}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between mb-3">
                   <div>
@@ -154,12 +199,16 @@ export default function ProductList({
                   </div>
                   <div className="text-right">
                     <p className="text-[11px] text-stone-400 font-medium">Stock</p>
-                    <p className={`text-sm font-bold ${product.stock < 50 ? "text-red-500" : "text-stone-700"}`}>{product.stock.toLocaleString()}</p>
+                    <p className={`text-sm font-bold ${product.stock < 50 ? "text-red-500" : "text-stone-700"}`}>{(product.stock ?? 0).toLocaleString()}</p>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => onEdit(product)} className="flex-1 flex items-center justify-center gap-1 text-[11px] font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 px-3 py-2 rounded-lg transition-all"><MdEdit className="text-sm" /> Edit</button>
-                  <button onClick={() => setConfirmDelete(product)} className="flex-1 flex items-center justify-center gap-1 text-[11px] font-bold text-red-500 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg transition-all"><MdDelete className="text-sm" /> Delete</button>
+                  <button onClick={() => onEdit(product)} className="flex-1 flex items-center justify-center gap-1 text-[11px] font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 px-3 py-2 rounded-lg transition-all">
+                    <MdEdit className="text-sm" /> Edit
+                  </button>
+                  <button onClick={() => setConfirmDelete(product)} className="flex-1 flex items-center justify-center gap-1 text-[11px] font-bold text-red-500 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg transition-all">
+                    <MdDelete className="text-sm" /> Delete
+                  </button>
                 </div>
               </div>
             ))}
